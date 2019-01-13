@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using DatingApp.API.Repositories;
 using DatingApp.API.Models;
 using System;
+using DatingApp.API.DTOs;
 
 namespace DatingApp.API.Services
 {
@@ -15,9 +16,9 @@ namespace DatingApp.API.Services
             _authRepository = authRepository;
         }
 
-        public async Task<User> Login(string userName, string password)
+        public async Task<UserDTO> Login(UserDTO userDTO)
         {
-            var users = await _authRepository.FilterAsync(x => x.UserName == userName,
+            var users = await _authRepository.FilterAsync(x => x.UserName == userDTO.UserName,
                 x => x);
             
             var user = users.FirstOrDefault();
@@ -27,32 +28,32 @@ namespace DatingApp.API.Services
                 return null;
             }
 
-            var passwordCorrect = VerifyPassword(password, user.PasswordHash, user.PasswordSalt);
+            var passwordCorrect = VerifyPassword(userDTO.Password, user.PasswordHash, user.PasswordSalt);
 
             if (!passwordCorrect)
             {
                 return null;
             }
 
-            return user;
+            return userDTO;
         }
 
 
-        public async Task<User> Register(string userName, string password)
+        public async Task<UserDTO> Register(UserDTO userDTO)
         {
             var user = new User()
             {
-                UserName = userName
+                UserName = userDTO.UserName
             };
 
-            (var passwordHash, var passwordSalt) = EncryptPassword(password);
+            (var passwordHash, var passwordSalt) = EncryptPassword(userDTO.Password);
 
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
 
             await _authRepository.CreateAsync(user);
 
-            return user;
+            return userDTO;
         }
 
         public async Task<bool> UserExists(string userName)
