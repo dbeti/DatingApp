@@ -6,9 +6,9 @@ namespace DatingApp.API.Services
 {
     public interface IAuthService
     {
-        Task<UserDTO> Register(UserDTO userDTO);
+        Task<UserForRegistrationDto> Register(UserForRegistrationDto userForRegistrationDto);
 
-        Task<UserDTO> Login(UserDTO userDTO);
+        Task<UserForLoginDto> Login(UserForLoginDto userForLoginDto);
 
         Task<bool> UserExists(string userName);
     }

@@ -16,9 +16,11 @@ namespace DatingApp.API.Services
             _authRepository = authRepository;
         }
 
-        public async Task<UserDTO> Login(UserDTO userDTO)
+        public async Task<UserForLoginDto> Login(UserForLoginDto userForLoginDto)
         {
-            var users = await _authRepository.FilterAsync(x => x.UserName == userDTO.UserName,
+            userForLoginDto.UserName = userForLoginDto.UserName.ToLower();
+
+            var users = await _authRepository.FilterAsync(x => x.UserName == userForLoginDto.UserName,
                 x => x);
             
             var user = users.FirstOrDefault();
@@ -28,32 +30,35 @@ namespace DatingApp.API.Services
                 return null;
             }
 
-            var passwordCorrect = VerifyPassword(userDTO.Password, user.PasswordHash, user.PasswordSalt);
+            var passwordCorrect = VerifyPassword(userForLoginDto.Password, user.PasswordHash, user.PasswordSalt);
 
             if (!passwordCorrect)
             {
                 return null;
             }
 
-            return userDTO;
+            userForLoginDto.Id = user.Id;
+            userForLoginDto.UserName = user.UserName;
+
+            return userForLoginDto;
         }
 
 
-        public async Task<UserDTO> Register(UserDTO userDTO)
+        public async Task<UserForRegistrationDto> Register(UserForRegistrationDto userForRegistrationDto)
         {
             var user = new User()
             {
-                UserName = userDTO.UserName
+                UserName = userForRegistrationDto.UserName
             };
 
-            (var passwordHash, var passwordSalt) = EncryptPassword(userDTO.Password);
+            (var passwordHash, var passwordSalt) = EncryptPassword(userForRegistrationDto.Password);
 
             user.PasswordHash = passwordHash;
             user.PasswordSalt = passwordSalt;
 
             await _authRepository.CreateAsync(user);
 
-            return userDTO;
+            return userForRegistrationDto;
         }
 
         public async Task<bool> UserExists(string userName)
