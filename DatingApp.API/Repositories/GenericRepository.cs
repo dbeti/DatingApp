@@ -38,12 +38,19 @@ namespace DatingApp.API.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<IEnumerable<TResult>> FilterAsync<TResult>(Expression<Func<T, bool>> predicate, Expression<Func<T, TResult>> selector)
+        public async Task<IEnumerable<TResult>> FilterAsync<TResult>(Expression<Func<T, bool>> predicate, 
+            Expression<Func<T, TResult>> selector,
+            params Expression<Func<T, object>>[] includes)
         {
-            var dbSet = _context.Set<T>();
+            var query = _context.Set<T>()
+                .AsNoTracking();
 
-            var entities = await dbSet
-                .AsNoTracking()
+            foreach (var include in includes)
+            {
+                query = query.Include(include);
+            }
+
+            var entities = await query
                 .Where(predicate)
                 .Select(selector)
                 .ToListAsync();
@@ -54,9 +61,9 @@ namespace DatingApp.API.Repositories
 
         public async Task<T> GetByIdAsync(int id)
         {
-            var dbSet = _context.Set<T>();
+            var query = _context.Set<T>();
 
-            var entity = await dbSet
+            var entity = await query
                 .FindAsync(id);
 
             return entity;

@@ -17,6 +17,6 @@ namespace DatingApp.API.Repositories
 
         Task DeleteAsync(int id);
 
-        Task<IEnumerable<TResult>> FilterAsync<TResult>(Expression<Func<T, bool>> predicate, Expression<Func<T, TResult>> selector);
+        Task<IEnumerable<TResult>> FilterAsync<TResult>(Expression<Func<T, bool>> predicate, Expression<Func<T, TResult>> selector, params Expression<Func<T, object>>[] includes);
     }
 }
